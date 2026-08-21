@@ -12,7 +12,8 @@ Install Samba under Debian,Ubuntu:
 sudo apt install Samba
 ```
 Copy me smb.conf or write you on smb.conf
-That for the right 
+
+That for the right: 
 ```bash
 sudo mkdir -p /nas
 sudo chown -R you_user:you_user /nas
