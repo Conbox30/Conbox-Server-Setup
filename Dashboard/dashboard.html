@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conbox30 Dashboard</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #111;
+            color: white;
+        }
+        header {
+            background-color: #222;
+            text-align: center;
+            border-bottom: 2px solid #ea580c;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+        .main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+        .card {
+            background-color: #222;
+            color: white;
+            height: 200px;
+            width: 300px;
+            border: 2px solid #ea580c;
+            border-radius: 24px;
+            box-shadow: 0 0 15px #ea580c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 0.6em 2em;
+            border: none;
+            outline: none;
+            color: rgb(255, 255, 255);
+            background: #111;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 10px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        button:before {
+            content: "";
+            background: linear-gradient(
+                45deg,
+                #ff0000,
+                #ff7300,
+                #fffb00,
+                #48ff00,
+                #00ffd5,
+                #002bff,
+                #7a00ff,
+                #ff00c8,
+                #ff0000,
+                #ea580c
+            );
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(5px);
+            -webkit-filter: blur(5px);
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            animation: glowing-button-85 20s linear infinite;
+            transition: opacity 0.3s ease-in-out;
+            border-radius: 10px;
+        }
+
+        @keyframes glowing-button-85 {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        button:after {
+            z-index: -1;
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #222;
+            left: 0;
+            top: 0;
+            border-radius: 10px;
+        }
+        button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>System:</h1>
+    </header>
+    
+    <div style="margin-top: 120px;"></div>
+    <div class="main">
+        
+        <div class="card">
+            <h1>RAM:</h1>
+            <div style="color: #ea580c;" id="free"></div>
+            <p id="ram-last" style="color: #ea580c; margin-top: 5px;"></p>
+        </div>
+
+        <div class="card">
+            <h1>CPU:</h1>
+            <div id="cpu" style="color: #ea580c;"></div>
+            <p id="temp" style="color: #ea580c; margin-top: 5px;"></p>
+        </div>
+
+        <div class="card">
+            <h1>UPTIME:</h1>
+            <div id="uptime" style="color: #ea580c;"></div>
+        </div>
+
+        <div class="card">
+            <h1>NAME & PLATFORM:</h1>
+            <p id="name" style="color: #ea580c; margin: 0;"></p>
+            <div id="platform" style="color: #ea580c;"></div>
+        </div>
+
+        <div class="card">
+            <h1>Disk:</h1>
+            <div id="disk" style="color: #ea580c;"></div>
+        </div>
+
+        <div class="card">
+            <h1>Shutdown or Reboot?</h1>
+            <div>
+                <button onclick="reboot()">Reboot</button>
+                <button onclick="shutdown()">Shutdown</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function reboot() {
+            const answer = confirm("Reboot?");
+            if (!answer) return;
+
+            try {
+                const response = await fetch('/api/reboot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (err) {
+                console.error('Reboot was not successful: ', err);
+                alert('Error: Command could not be sent.');
+            }
+        }
+
+        async function shutdown() {
+            const shutdownque = confirm('Shutdown?');
+            if (!shutdownque) return;
+
+            try {
+                const response = await fetch('/api/shutdown', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (err) {
+                console.error('Shutdown has an error: ', err);
+                alert('Error: Command could not be sent.');
+            }
+        }
+
+        async function datafromOS() {
+            try {
+                let datafromfetch = await fetch('/api/system-info', {
+                    method: 'POST'
+                });
+                const data = await datafromfetch.json();
+
+                function formatUptime(seconds) {
+                    const d = Math.floor(seconds / (3600 * 24));
+                    const h = Math.floor((seconds % (3600 * 24)) / 3600);
+                    const m = Math.floor((seconds % 3600) / 60);
+                    const s = Math.floor(seconds % 60);
+
+                    return `${d}d ${h}h ${m}m ${s}s`;
+                }
+
+                const freeram = (data.freeMemory / (1024 ** 3)).toFixed(1);
+                const totalram = (data.totalMemory / (1024 ** 3)).toFixed(1);
+
+                document.getElementById('uptime').textContent = formatUptime(data.uptime);
+                document.getElementById('free').textContent = `Free RAM: ${freeram} GB, Total RAM: ${totalram} GB`;
+                document.getElementById('ram-last').textContent = `Ram Used: ${data.ramPercent}%`;
+                        
+                document.getElementById('cpu').textContent = `${data.cpuname} x ${data.cpus}`;
+                document.getElementById('name').textContent = data.hostname;
+                
+                document.getElementById('platform').textContent = `${data.platform} ${data.architecture}`;
+                document.getElementById('temp').textContent = `Temp: ${data.temp}`;
+
+                document.getElementById('disk').textContent = data.disk;
+                        
+            } catch (error) {
+                console.error('Error fetching data from Server:', error);
+            }
+        } 
+
+        datafromOS();
+        setInterval(datafromOS, 1000);
+    </script>
+</body>
+</html>
