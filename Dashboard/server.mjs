@@ -23,8 +23,8 @@ app.post('/dashboard', (req,res)=>{
     let pw = req.body.password;
 
     //pw and name
-    const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-    const ADMIN_PASS = process.env.ADMIN_PASS || 'admin1234';
+    const ADMIN_USER = process.env.ADMIN_USER || 'YOUR_USERNAME';
+    const ADMIN_PASS = process.env.ADMIN_PASS || 'YOUR_PASSWORD';
 
     if(username === ADMIN_USER  && pw === ADMIN_PASS ){
         res.sendFile(path.resolve('dashboard.html'));
